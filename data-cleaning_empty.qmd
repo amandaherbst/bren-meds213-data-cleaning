@@ -115,26 +115,29 @@ snowsurvey_fixed %>%
 Ok, we can do the transformation:
 
 ```{r}
-snowsurvey_fixed %>% 
+snowsurvey_fixed <- snowsurvey_fixed %>% 
   mutate(Snow_cover = as.numeric(Snow_cover))
 ```
 
 Yeah we have finally a numeric column 🎉. Now we can verify that all the values are between 0 and 100:
 
 ```{r}
- 
+ snowsurvey_fixed %>% 
+  filter(Snow_cover > 100)
 ```
 
 We have two values above 100, with an interesting 470%! ☃️ We should probably set those values to NAs:
 
 ```{r}
-
+snowsurvey_fixed <- snowsurvey_fixed %>% 
+  mutate(Snow_cover = ifelse(Snow_cover > 100, NA, Snow_cover))
 ```
 
 Let's check for negative values:
 
 ```{r}
-
+ snowsurvey_fixed %>% 
+  filter(Snow_cover < 0)
 ```
 
 No negative value detected ✅
