@@ -1,0 +1,50 @@
+---
+title: "Assignment 2: Data Cleaning"
+format: html
+---
+
+```{r}
+#| message: false  
+
+# Libraries
+library(tidyverse)
+
+# file names
+datadir_raw <- "data/raw/"
+
+datadir_processed <- "data/processed/"
+
+snowsurvey_file <- "snow_cover.csv"
+```
+
+## Read in Data
+```{r}
+# Import the snow cover data
+snowsurvey_csv <- read_csv(file.path(datadir_processed, snowsurvey_file))
+
+glimpse(snowsurvey_csv)
+```
+
+# Cleaning Water Cover Column
+
+Based on the glimpse, water cover is currently a character, so let's see what non-numeric unique values are in the column.
+
+```{r, warning = FALSE}
+snowsurvey_csv %>% 
+  count(Water_cover) %>% 
+  filter(is.na(as.numeric(Water_cover)))
+```
+
+Let's convert all of these to NA values
+
+```{r}
+# can I do it all in one case_when? (how do I tell it what to do with anything not listed and keep the numbers)
+snowsurvey_water_fixed <- snowsurvey_csv %>% 
+  mutate(Water_cover = case_when(
+    #Water_cover == "-" ~ NA,
+    Water_cover == "." ~ NA
+   # Water_cover == "n/a" ~ NA,
+    #Water_cover == "unk" ~ NA
+  ))
+```
+
