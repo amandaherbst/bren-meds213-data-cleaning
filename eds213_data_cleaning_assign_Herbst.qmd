@@ -19,13 +19,13 @@ snowsurvey_file <- "snow_cover.csv"
 
 ## Read in Data
 ```{r}
-# Import the snow cover data
+# Import the snow cover data with snow_cover already cleaned
 snowsurvey_csv <- read_csv(file.path(datadir_processed, snowsurvey_file))
 
 glimpse(snowsurvey_csv)
 ```
 
-# Cleaning Water Cover Column
+# 1. Cleaning Water Cover Column
 
 Based on the glimpse, water cover is currently a character, so let's see what non-numeric unique values are in the column.
 
@@ -35,16 +35,64 @@ snowsurvey_csv %>%
   filter(is.na(as.numeric(Water_cover)))
 ```
 
-Let's convert all of these to NA values
+Let's convert all of these to NA values, since that is what we also did with snow cover.
 
 ```{r}
-# can I do it all in one case_when? (how do I tell it what to do with anything not listed and keep the numbers)
+# All together using case_when
 snowsurvey_water_fixed <- snowsurvey_csv %>% 
   mutate(Water_cover = case_when(
-    #Water_cover == "-" ~ NA,
-    Water_cover == "." ~ NA
-   # Water_cover == "n/a" ~ NA,
-    #Water_cover == "unk" ~ NA
+    Water_cover == "-" ~ NA,
+    Water_cover == "." ~ NA,
+    Water_cover == "n/a" ~ NA,
+    Water_cover == "unk" ~ NA,
+    # everything else keep the same
+    .default = Water_cover
   ))
 ```
 
+## Transform column to numeric (correct data type)
+```{r}
+snowsurvey_water_fixed <- snowsurvey_water_fixed %>% 
+  mutate(Water_cover = as.numeric(Water_cover))
+```
+
+## Check for appropriate percentage values
+```{r}
+snowsurvey_water_fixed %>% 
+  filter(Water_cover > 100)
+
+snowsurvey_water_fixed %>% 
+  filter(Water_cover < 0)
+```
+
+There is one row where water cover is listed as 353. We can't infer what the number was supposed to be since land cover is listed as -298, so I am going to convert all cover values to NA since I want to keep the record of this observation.
+```{r}
+snowsurvey_water_fixed <- snowsurvey_water_fixed %>% 
+  mutate(Water_cover = ifelse(Water_cover > 100, NA, Water_cover))
+```
+
+There are no values of water cover that are less than 0.
+
+
+
+# 2. Cleaning land cover column
+
+Land is currently a character so we will repeat the same steps as water, starting with finding the non-numeric values.
+
+```{r}
+snowsurvey_water_fixed %>% 
+  count(Land_cover) %>% 
+  filter(is.na(as.numeric(Land_cover)))
+```
+
+The non-numeric values are similar to those in water cover, so we will convert them to NA values
+```{r}
+
+```
+
+
+
+## Write to a csv file
+```{r}
+write_csv(snowsurvey_water_fixed, file.path(datadir_processed, "water_cover.csv"))
+```
